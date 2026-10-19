@@ -1,4 +1,0 @@
-User-agent: *
-Disallow:
-
-Sitemap: https://megan-dailey.github.io/megan-dailey-site//sitemap.xml
