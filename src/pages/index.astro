@@ -1,0 +1,102 @@
+---
+import "../styles/global.css";
+import { getCollection } from "astro:content";
+import { site } from "../content/site";
+import { Content as About } from "../content/about.md";
+
+const publications = (await getCollection("publications")).map((p) => p.data);
+
+const years = [...new Set(publications.map((p) => p.year))].sort((a, b) => b - a);
+const isMe = (author: string) => author.startsWith("Megan");
+const updated = new Date().toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{site.name}</title>
+    <meta name="description" content={site.description} />
+    <link rel="icon" href="/prof_pic.jpg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header>
+      <div class="wrap">
+        <a class="brand" href="#">{site.name}</a>
+        <nav><a href="#about">About</a><a href="#publications">Publications</a></nav>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <div class="hero">
+        <div>
+          <h1>{site.name}</h1>
+          <p class="role">{site.role}<br />{site.affiliation}</p>
+          <div class="links">
+            {site.links.map((l) => <a href={l.href}>{l.label}</a>)}
+          </div>
+        </div>
+        <div class="avatar"><img src="/prof_pic.jpg" alt={`Portrait of ${site.name}`} /></div>
+      </div>
+
+      <section id="about" class="bio">
+        <h2>About</h2>
+        <About />
+      </section>
+
+      <section id="publications">
+        <h2>Publications</h2>
+        {
+          years.map((year) => (
+            <>
+              <div class="year">{year}</div>
+              {publications
+                .filter((p) => p.year === year)
+                .map((p) => (
+                  <div class="pub">
+                    <div class="tag">{p.type}</div>
+                    <div>
+                      <p class="pub-title">{p.title}</p>
+                      <p class="pub-meta">
+                        {p.authors.map((a, i) => (
+                          <>
+                            {i > 0 && ", "}
+                            {isMe(a) ? <b>{a}</b> : a}
+                          </>
+                        ))}
+                        {(p.journal || p.details) && (
+                          <>
+                            <br />
+                            {p.journal && <i>{p.journal}</i>}
+                            {p.journal && p.details && ", "}
+                            {p.details}
+                          </>
+                        )}
+                      </p>
+                      {(p.doi || p.pdf) && (
+                        <div class="pub-links">
+                          {p.doi && <a href={`https://doi.org/${p.doi}`}>DOI</a>}
+                          {p.pdf && <a href={p.pdf}>PDF</a>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+            </>
+          ))
+        }
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">Contact: {site.contact} · Last updated {updated}</div>
+    </footer>
+  </body>
+</html>
